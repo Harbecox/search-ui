@@ -13,27 +13,28 @@ class Product extends Model
     protected $casts = [
         'price'      => 'decimal:2',
         'attributes' => 'array',
+        'images'     => 'array',
     ];
 
-    /**
-     * Преобразует attributes из [{"name":"..", "value":".."}] в ["name" => "value"]
-     */
+    public function getFirstImageAttribute(): ?string
+    {
+        $images = $this->images;
+        return (!empty($images) && is_array($images)) ? $images[0] : null;
+    }
+
+    public function getProductUrlAttribute(): ?string
+    {
+        if (!$this->url) return null;
+        return 'https://www.texenergo.ru' . $this->url;
+    }
+
     public function getAttributesMapAttribute(): array
     {
         $attrs = $this->attributes['attributes'] ?? [];
-
-        if (empty($attrs) || !is_array($attrs)) {
-            return [];
-        }
-
-        // Если массив объектов {name, value}
+        if (empty($attrs) || !is_array($attrs)) return [];
         if (isset($attrs[0]['name'])) {
-            return collect($attrs)
-                ->pluck('value', 'name')
-                ->toArray();
+            return collect($attrs)->pluck('value', 'name')->toArray();
         }
-
-        // Если уже ключ => значение
         return $attrs;
     }
 }

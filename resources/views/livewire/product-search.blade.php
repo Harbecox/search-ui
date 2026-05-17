@@ -95,21 +95,50 @@
         @if (count($results) > 0)
             <div class="space-y-3">
                 @foreach ($results as $item)
-                    @php $product = $item['product'] @endphp
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex gap-4">
+                    @php
+                        $product = $item['product'];
+                        $image   = $product->first_image ?? null;
+                        $url     = $product->product_url ?? null;
+                        $source  = $item['source'];
+                    @endphp
 
-                        @if ($product->image_url)
-                            <img src="{{ $product->image_url }}" alt="{{ $product->title }}"
-                                class="w-20 h-20 object-contain rounded-lg border flex-shrink-0">
-                        @else
-                            <div class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-300 text-2xl">
-                                📦
-                            </div>
-                        @endif
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex gap-4 hover:border-blue-200 transition">
 
+                        {{-- Картинка --}}
+                        <div class="flex-shrink-0 w-24 h-24">
+                            @if ($image)
+                                @if ($url)
+                                    <a href="{{ $url }}" target="_blank" rel="noopener">
+                                        <img src="{{ $image }}" alt="{{ $product->title }}"
+                                            class="w-24 h-24 object-contain rounded-lg border hover:opacity-80 transition">
+                                    </a>
+                                @else
+                                    <img src="{{ $image }}" alt="{{ $product->title }}"
+                                        class="w-24 h-24 object-contain rounded-lg border">
+                                @endif
+                            @else
+                                <div class="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center text-gray-300 text-3xl">
+                                    📦
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Информация --}}
                         <div class="flex-1 min-w-0">
                             <div class="flex items-start justify-between gap-2">
-                                <h3 class="font-medium text-gray-900 text-sm leading-snug">{{ $product->title }}</h3>
+                                {{-- Название + ссылка --}}
+                                @if ($url)
+                                    <a href="{{ $url }}" target="_blank" rel="noopener"
+                                        class="font-medium text-blue-700 hover:underline text-sm leading-snug">
+                                        {{ $product->title }}
+                                    </a>
+                                @else
+                                    <h3 class="font-medium text-gray-900 text-sm leading-snug">
+                                        {{ $product->title }}
+                                    </h3>
+                                @endif
+
+                                {{-- Цена --}}
                                 @if ($product->price)
                                     <span class="text-blue-600 font-semibold text-sm whitespace-nowrap">
                                         {{ number_format($product->price, 2, '.', ' ') }} ₽
@@ -117,34 +146,53 @@
                                 @endif
                             </div>
 
-                            @if ($product->sku)
-                                <p class="text-xs text-gray-400 mt-0.5">Арт: {{ $product->sku }}</p>
-                            @endif
+                            {{-- Артикул + источник --}}
+                            <div class="flex items-center gap-3 mt-0.5">
+                                @if ($product->sku)
+                                    <p class="text-xs text-gray-400">Арт: {{ $product->sku }}</p>
+                                @endif
+                                <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-400">
+                                    {{ $source }}
+                                </span>
+                            </div>
 
+                            {{-- Описание --}}
                             @if ($product->description)
                                 <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ $product->description }}</p>
                             @endif
 
-                            @php $attrs = $product->attributes_map @endphp
-                            @if (!empty($attrs))
-                                <div class="flex flex-wrap gap-1 mt-2">
-                                    @foreach (array_slice($attrs, 0, 4) as $name => $value)
-                                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
-                                            {{ $name }}: {{ $value }}
-                                        </span>
-                                    @endforeach
-                                    @if (count($attrs) > 4)
-                                        <span class="text-xs text-gray-400">+{{ count($attrs) - 4 }}</span>
-                                    @endif
-                                </div>
+                            {{-- Характеристики --}}
+                            @if (method_exists($product, 'getAttributesMapAttribute'))
+                                @php $attrs = $product->attributes_map @endphp
+                                @if (!empty($attrs))
+                                    <div class="flex flex-wrap gap-1 mt-2">
+                                        @foreach (array_slice($attrs, 0, 4) as $name => $value)
+                                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                                                {{ $name }}: {{ $value }}
+                                            </span>
+                                        @endforeach
+                                        @if (count($attrs) > 4)
+                                            <span class="text-xs text-gray-400">+{{ count($attrs) - 4 }}</span>
+                                        @endif
+                                    </div>
+                                @endif
                             @endif
                         </div>
 
-                        <div class="flex-shrink-0">
+                        {{-- Score + ссылка "Открыть" --}}
+                        <div class="flex-shrink-0 flex flex-col items-end justify-between">
                             <span class="text-xs text-gray-300">{{ $item['score'] }}</span>
+                            @if ($url)
+                                <a href="{{ $url }}" target="_blank" rel="noopener"
+                                    class="mt-2 text-xs text-blue-500 hover:text-blue-700 border border-blue-200 px-2 py-1 rounded hover:bg-blue-50 transition">
+                                    Открыть →
+                                </a>
+                            @endif
                         </div>
+
                     </div>
                 @endforeach
+            </div>
 
         @elseif ($searched && !$error)
             <div class="text-center py-16 text-gray-400">

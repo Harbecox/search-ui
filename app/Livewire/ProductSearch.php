@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use App\Models\Slami;
 use App\Services\SearchApiService;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -54,37 +55,45 @@ class ProductSearch extends Component
             $this->parsedQuery = $response['parsed_query'] ?? null;
 
             $hits = $response['hits'] ?? [];
+            if (empty($hits)) return;
 
-            if (empty($hits)) {
-                return;
-            }
-
-            // Собрать ID по всем источникам
+            // Сгруппировать ID по источникам
             $idsBySource = [];
             foreach ($hits as $hit) {
                 [$source, $id] = explode(':', $hit['global_id'], 2);
                 $idsBySource[$source][$id] = $hit['score'];
             }
 
-            // Загрузить products из БД
+            // Загрузить из БД по источникам
             $products = collect();
             if (!empty($idsBySource['products'])) {
                 $products = Product::whereIn('id', array_keys($idsBySource['products']))
-                    ->get()
-                    ->keyBy('id');
+                    ->get()->keyBy('id');
+            }
+
+            $slamis = collect();
+            if (!empty($idsBySource['slamis'])) {
+                $slamis = Slami::whereIn('id', array_keys($idsBySource['slamis']))
+                    ->get()->keyBy('id');
             }
 
             // Собрать результаты в порядке из поиска
             $this->results = collect($hits)
-                ->map(function ($hit) use ($products) {
+                ->map(function ($hit) use ($products, $slamis) {
                     [$source, $id] = explode(':', $hit['global_id'], 2);
+                    $model = match($source) {
+                        'products' => $products->get($id),
+                        'slamis'   => $slamis->get($id),
+                        default    => null,
+                    };
+                    if (!$model) return null;
                     return [
                         'score'   => round($hit['score'], 4),
                         'source'  => $source,
-                        'product' => $source === 'products' ? $products->get($id) : null,
+                        'product' => $model,
                     ];
                 })
-                ->filter(fn($item) => $item['product'] !== null)
+                ->filter()
                 ->values()
                 ->toArray();
 
