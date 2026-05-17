@@ -23,22 +23,24 @@ class SearchApiService
         ?float $priceMin = null,
         ?float $priceMax = null,
         array $sourceKeys = [],
+        bool $useQueryParser = false,
     ): array {
         $filters = array_filter([
-            'category'   => $category,
-            'price_min'  => $priceMin,
-            'price_max'  => $priceMax,
+            'category'    => $category,
+            'price_min'   => $priceMin,
+            'price_max'   => $priceMax,
             'source_keys' => $sourceKeys ?: null,
         ]);
 
         try {
             $response = Http::withToken($this->token)
-                ->timeout(30)
+                ->timeout(60)
                 ->post("{$this->baseUrl}/search", [
-                    'query'        => $query,
-                    'limit'        => $limit,
-                    'use_reranker' => false,
-                    'filters'      => empty($filters) ? null : $filters,
+                    'query'            => $query,
+                    'limit'            => $limit,
+                    'use_reranker'     => false,
+                    'use_query_parser' => $useQueryParser,
+                    'filters'          => empty($filters) ? null : $filters,
                 ]);
         } catch (ConnectionException $e) {
             throw new RuntimeException('Search service unavailable: ' . $e->getMessage());
