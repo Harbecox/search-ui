@@ -176,6 +176,11 @@ class ProductSearch extends Component
     // Проверить товар на соответствие всем фильтрам, кроме $exceptAttr
     private function passesFiltersExcept(array $item, ?string $exceptAttr): bool
     {
+        $hasPriceFilter = $this->filterPriceMin !== '' || $this->filterPriceMax !== '';
+
+        // Товары без цены не показываем если активен ценовой фильтр
+        if ($hasPriceFilter && ($item['price'] <= 0)) return false;
+
         if ($this->filterPriceMin !== '' && $item['price'] < (float)$this->filterPriceMin) return false;
         if ($this->filterPriceMax !== '' && $item['price'] > (float)$this->filterPriceMax) return false;
         if (!empty($this->filterSources) && !in_array($item['source'], $this->filterSources)) return false;
