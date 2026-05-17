@@ -41,17 +41,29 @@
 
     {{-- Что распознал Ollama --}}
     @if ($parsedQuery)
-        <div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2.5 mb-4 text-xs text-blue-700 flex flex-wrap gap-3">
-            <span>🤖 Распознано:</span>
+        <div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2.5 mb-4 text-xs text-blue-700 flex flex-wrap gap-x-4 gap-y-1 items-center">
+            <span class="font-medium">🤖 Распознано:</span>
             <span>Запрос: <strong>{{ $parsedQuery['query'] }}</strong></span>
+            @if($parsedQuery['amps'] ?? false)
+                <span>Ток: <strong>{{ $parsedQuery['amps'] }}А</strong></span>
+            @endif
             @if($parsedQuery['price_min'] ?? false)
                 <span>от <strong>{{ number_format($parsedQuery['price_min'], 0, '.', ' ') }} ₽</strong></span>
             @endif
             @if($parsedQuery['price_max'] ?? false)
                 <span>до <strong>{{ number_format($parsedQuery['price_max'], 0, '.', ' ') }} ₽</strong></span>
             @endif
-            @if(!empty($parsedQuery['exclude']))
-                <span>Исключить: <strong>{{ implode(', ', $parsedQuery['exclude']) }}</strong></span>
+            @if($parsedQuery['brand'] ?? false)
+                <span>Бренд: <strong>{{ $parsedQuery['brand'] }}</strong></span>
+            @endif
+            @if($parsedQuery['country'] ?? false)
+                <span>Страна: <strong>{{ $parsedQuery['country'] }}</strong></span>
+            @endif
+            @if(!empty($parsedQuery['include'] ?? []))
+                <span>Включить: <strong>{{ implode(', ', $parsedQuery['include']) }}</strong></span>
+            @endif
+            @if(!empty($parsedQuery['exclude'] ?? []))
+                <span class="text-red-500">Исключить: <strong>{{ implode(', ', $parsedQuery['exclude']) }}</strong></span>
             @endif
         </div>
     @endif
