@@ -28,18 +28,11 @@
                 @endif
             </div>
 
-            {{-- Фильтры + переключатель умного поиска --}}
-            <div class="flex flex-wrap gap-3 items-center">
-                <span class="text-xs text-gray-500">Цена:</span>
-                <input wire:model="priceMin" type="number" placeholder="от"
-                    class="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <span class="text-gray-400 text-sm">—</span>
-                <input wire:model="priceMax" type="number" placeholder="до"
-                    class="w-24 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-
-                <label class="flex items-center gap-1.5 ml-auto cursor-pointer select-none">
+            {{-- Переключатель умного поиска --}}
+            <div class="flex justify-end">
+                <label class="flex items-center gap-1.5 cursor-pointer select-none">
                     <input type="checkbox" wire:model="smartSearch" class="rounded text-blue-600">
-                    <span class="text-xs text-gray-600">🤖 Умный поиск</span>
+                    <span class="text-xs text-gray-600">🤖 Умный поиск (цена, исключения)</span>
                 </label>
             </div>
 

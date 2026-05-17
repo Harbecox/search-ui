@@ -12,8 +12,6 @@ class ProductSearch extends Component
     #[Url(as: 'q')]
     public string $query = '';
 
-    public string $priceMin = '';
-    public string $priceMax = '';
     public bool $smartSearch = true;
 
     public array $results = [];
@@ -48,8 +46,6 @@ class ProductSearch extends Component
             $response = $service->search(
                 query:          $this->query,
                 limit:          (int) config('services.search_api.default_limit', 10),
-                priceMin:       $this->priceMin !== '' ? (float) $this->priceMin : null,
-                priceMax:       $this->priceMax !== '' ? (float) $this->priceMax : null,
                 useQueryParser: $this->smartSearch,
             );
 
@@ -100,8 +96,6 @@ class ProductSearch extends Component
     public function clear(): void
     {
         $this->query       = '';
-        $this->priceMin    = '';
-        $this->priceMax    = '';
         $this->results     = [];
         $this->parsedQuery = null;
         $this->searched    = false;
